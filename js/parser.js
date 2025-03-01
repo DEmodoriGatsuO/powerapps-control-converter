@@ -1,72 +1,164 @@
 /**
- * YAMLパーサークラス
- * クラシックコントロールのYAMLを解析する機能を提供
+ * YAML Parser Class
+ * Provides functionality for parsing and manipulating YAML content
+ * for Power Apps control conversion
  */
 class YamlParser {
     /**
-     * YAMLテキストを解析してJavaScriptオブジェクトに変換します
-     * @param {string} yamlText - 解析するYAMLテキスト
-     * @returns {Object} 解析されたオブジェクト
-     * @throws {Error} 解析エラーが発生した場合
+     * Parse YAML text into a JavaScript object
+     * @param {string} yamlText - The YAML text to parse
+     * @returns {Object} The parsed object
+     * @throws {Error} If parsing fails
      */
     static parse(yamlText) {
         try {
-            // js-yamlライブラリを使用してYAMLをパース
+            // Use js-yaml library to parse the YAML
             const parsed = jsyaml.load(yamlText);
-            console.log('解析結果:', parsed);
+            console.log('Parsing result:', parsed);
             return parsed;
         } catch (error) {
-            console.error('YAML解析エラー:', error);
-            throw new Error(`YAML解析エラー: ${error.message}`);
+            console.error('YAML parsing error:', error);
+            throw new Error(`YAML parsing error: ${error.message}`);
         }
     }
 
     /**
-     * JavaScriptオブジェクトをYAMLテキストに変換します
-     * @param {Object} obj - YAML文字列に変換するオブジェクト
-     * @returns {string} YAML形式の文字列
-     * @throws {Error} 変換エラーが発生した場合
+     * Convert JavaScript object to YAML text
+     * @param {Object} obj - The object to convert to YAML
+     * @returns {string} YAML formatted string
+     * @throws {Error} If conversion fails
      */
     static stringify(obj) {
         try {
-            // js-yamlライブラリを使用してオブジェクトをYAML文字列に変換
+            // Use js-yaml library to convert object to YAML string
             const yamlText = jsyaml.dump(obj, {
                 indent: 2,
-                lineWidth: -1, // 行の折り返しを無効化
-                noRefs: true,  // 参照を使用しない
+                lineWidth: -1, // Disable line wrapping
+                noRefs: true,  // Don't use reference tags
+                sortKeys: false // Preserve key order
             });
             return yamlText;
         } catch (error) {
-            console.error('YAML変換エラー:', error);
-            throw new Error(`YAML変換エラー: ${error.message}`);
+            console.error('YAML conversion error:', error);
+            throw new Error(`YAML conversion error: ${error.message}`);
         }
     }
 
     /**
-     * YAMLの構文検証を行います
-     * @param {string} yamlText - 検証するYAMLテキスト
-     * @returns {boolean} 検証結果（有効な場合はtrue）
+     * Validate YAML syntax
+     * @param {string} yamlText - The YAML text to validate
+     * @returns {boolean} True if valid, false otherwise
      */
     static validate(yamlText) {
         try {
             jsyaml.load(yamlText);
             return true;
         } catch (error) {
+            console.warn('YAML validation failed:', error.message);
             return false;
         }
     }
 
     /**
-     * コントロールタイプを判定します
-     * @param {Object} parsedYaml - 解析されたYAMLオブジェクト
-     * @returns {string} コントロールタイプ
+     * Detect the control type from parsed YAML
+     * @param {Object} parsedYaml - The parsed YAML object
+     * @returns {string} The detected control type or 'unknown'
      */
     static detectControlType(parsedYaml) {
-        // 型の判定ロジック（実際のPower Apps構造に合わせて調整が必要）
+        // Type detection logic (adjust according to actual Power Apps structure)
         if (!parsedYaml || !parsedYaml.Type) {
             return 'unknown';
         }
         
         return parsedYaml.Type;
+    }
+    
+    /**
+     * Find differences between two YAML objects
+     * Useful for debugging conversions
+     * @param {Object} original - Original object
+     * @param {Object} converted - Converted object
+     * @returns {Object} Object containing added, removed, and modified properties
+     */
+    static findDifferences(original, converted) {
+        if (!original || !converted) {
+            return { error: 'Invalid input objects' };
+        }
+        
+        const differences = {
+            added: {},
+            removed: {},
+            modified: {}
+        };
+        
+        // Find added and modified properties
+        for (const key in converted) {
+            if (!(key in original)) {
+                differences.added[key] = converted[key];
+            } else if (JSON.stringify(original[key]) !== JSON.stringify(converted[key])) {
+                differences.modified[key] = {
+                    from: original[key],
+                    to: converted[key]
+                };
+            }
+        }
+        
+        // Find removed properties
+        for (const key in original) {
+            if (!(key in converted)) {
+                differences.removed[key] = original[key];
+            }
+        }
+        
+        return differences;
+    }
+    
+    /**
+     * Merge two YAML objects
+     * @param {Object} base - Base object
+     * @param {Object} override - Object with properties to override or add
+     * @returns {Object} Merged object
+     */
+    static mergeYamlObjects(base, override) {
+        if (!base) return override || {};
+        if (!override) return base || {};
+        
+        const result = { ...base };
+        
+        for (const key in override) {
+            // If both values are objects, merge them recursively
+            if (
+                typeof override[key] === 'object' && 
+                override[key] !== null &&
+                typeof base[key] === 'object' && 
+                base[key] !== null &&
+                !Array.isArray(override[key]) &&
+                !Array.isArray(base[key])
+            ) {
+                result[key] = this.mergeYamlObjects(base[key], override[key]);
+            } 
+            // Otherwise override the value
+            else {
+                result[key] = override[key];
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Format YAML with consistent indentation and styling
+     * @param {string} yamlText - YAML text to format
+     * @returns {string} Formatted YAML text
+     */
+    static formatYaml(yamlText) {
+        try {
+            // Parse and then stringify to normalize format
+            const parsed = this.parse(yamlText);
+            return this.stringify(parsed);
+        } catch (error) {
+            console.error('Error formatting YAML:', error);
+            return yamlText; // Return original if formatting fails
+        }
     }
 }

@@ -1,31 +1,70 @@
 /**
- * コントロール変換クラス
- * クラシックコントロールからモダンコントロールへの変換ロジックを実装
+ * Control Converter Class
+ * Implements conversion logic from classic Power Apps controls to modern controls
  */
 class ControlConverter {
     constructor() {
-        // 変換マッピングを定義
+        // Define control type mappings (classic to modern)
         this.controlTypeMapping = {
+            // Basic controls
             'button': 'button_v1',
             'text': 'text_v1',
             'label': 'label_v1',
             'image': 'image_v1',
-            'form': 'form_v1',
-            'gallery': 'gallery_v1',
+            'htmltext': 'html_v1',
+            'rectangle': 'rectangle_v1',
+            'icon': 'icon_v1',
+            
+            // Input controls
+            'textbox': 'textinput_v1',
+            'textarea': 'textarea_v1',
             'dropdown': 'dropdown_v1',
             'combobox': 'combobox_v1',
-            'textbox': 'textinput_v1',
             'checkbox': 'checkbox_v1',
             'toggle': 'toggleswitch_v1',
+            'radio': 'radio_v1',
             'slider': 'slider_v1',
             'datepicker': 'datepicker_v1',
+            'timepicker': 'timepicker_v1',
+            'datetimepicker': 'datetimepicker_v1',
+            'rating': 'rating_v1',
+            
+            // Data visualization
+            'gallery': 'gallery_v1',
             'datatable': 'datatable_v1',
-            // 他のコントロールタイプも必要に応じて追加
+            'chart': 'chart_v1',
+            'piechart': 'piechart_v1',
+            'barchart': 'barchart_v1',
+            'lineChart': 'linechart_v1',
+            
+            // Navigation
+            'tab': 'tabcontrol_v1',
+            'navbar': 'navbar_v1',
+            'menu': 'menu_v1',
+            
+            // Containers
+            'form': 'form_v1',
+            'group': 'group_v1',
+            'card': 'card_v1',
+            'container': 'container_v1',
+            'dialog': 'dialog_v1',
+            
+            // Media
+            'video': 'video_v1',
+            'camera': 'camera_v1',
+            'microphone': 'microphone_v1',
+            'barcodescanner': 'barcodescanner_v1',
+            
+            // Advanced
+            'timer': 'timer_v1',
+            'pdf': 'pdf_v1',
+            'powerbi': 'powerbi_v1',
+            'mapcontrol': 'map_v1',
         };
 
-        // プロパティマッピングを定義
+        // Define property mappings (classic to modern)
         this.propertyMapping = {
-            // 共通プロパティ
+            // Common properties
             'Visible': 'Visible',
             'X': 'X',
             'Y': 'Y',
@@ -35,56 +74,97 @@ class ControlConverter {
             'BorderColor': 'BorderColor',
             'BorderThickness': 'BorderThickness',
             'OnSelect': 'OnSelect',
-            
-            // ボタン特有
-            'Text': 'Text',
             'DisplayMode': 'DisplayMode',
+            'TabIndex': 'TabIndex',
+            'Tooltip': 'Tooltip',
+            'AccessibleLabel': 'AccessibleLabel',
             
-            // テキスト入力特有
+            // Text properties
+            'Text': 'Text',
+            'FontWeight': 'FontWeight',
+            'Font': 'Font',
+            'Size': 'Size',
+            'Italic': 'Italic',
+            'Underline': 'Underline',
+            'Strikethrough': 'Strikethrough',
+            'Color': 'Color',
+            'Align': 'Align',
+            'VerticalAlign': 'VerticalAlign',
+            'LineHeight': 'LineHeight',
+            'Overflow': 'Overflow',
+            
+            // Input properties
             'Default': 'DefaultText',
             'HintText': 'Placeholder',
+            'Format': 'Format',
+            'MaxLength': 'MaxLength',
+            'Mode': 'Mode',
             
-            // ドロップダウン特有
+            // Dropdown/Combobox properties
             'Items': 'Items',
             'Selected': 'SelectedItem',
+            'AllowEmptySelection': 'AllowEmptySelection',
+            'AllItems': 'AllItems',
+            'SearchPlaceholder': 'Placeholder',
             
-            // ギャラリー特有
+            // Gallery properties
             'TemplateSize': 'TemplateSize',
             'TemplateFill': 'TemplateFill',
+            'TemplateGap': 'TemplateGap',
+            'Layout': 'Layout',
+            'WrapCount': 'WrapCount',
+            'ShowNavigation': 'ShowNavigation',
+            'ShowScrollbar': 'ShowScrollbar',
             
-            // その他必要に応じて追加
+            // Form properties
+            'DataSource': 'DataSource',
+            'Item': 'Item',
+            'FormMode': 'FormMode',
+            'ShowHeader': 'ShowHeader',
+            'ShowFooter': 'ShowFooter',
+            
+            // Image properties
+            'Image': 'Image',
+            'ImagePosition': 'ImagePosition',
+            'ImageRotation': 'ImageRotation',
+            
+            // Button properties
+            'RadiusTopLeft': 'BorderRadius.TopLeft',
+            'RadiusTopRight': 'BorderRadius.TopRight',
+            'RadiusBottomLeft': 'BorderRadius.BottomLeft',
+            'RadiusBottomRight': 'BorderRadius.BottomRight'
         };
         
-        // 変換ログの記録用
+        // Log of conversion actions
         this.conversionLog = [];
     }
 
     /**
-     * クラシックコントロールのYAMLをモダンコントロールのYAMLに変換します
-     * @param {Object} classicControl - 変換元のクラシックコントロールオブジェクト
-     * @returns {Object} 変換後のモダンコントロールオブジェクト
-     * @throws {Error} 変換中にエラーが発生した場合
+     * Convert classic control YAML to modern control YAML
+     * @param {Object} classicControl - Classic control object
+     * @returns {Object} Modern control object
+     * @throws {Error} If conversion fails
      */
     convert(classicControl) {
         try {
             this.conversionLog = [];
-            this.logConversion('変換開始');
+            this.logConversion('Starting conversion');
             
-            // 入力の検証
+            // Validate input
             if (!classicControl || typeof classicControl !== 'object') {
-                throw new Error('無効な入力形式です');
+                throw new Error('Invalid input format');
             }
             
-            // コントロールタイプの取得と変換
+            // Get and convert control type
             const classicType = classicControl.Type || '';
             const modernType = this.getModernControlType(classicType);
             
             if (!modernType) {
-                this.logConversion(`未対応のコントロールタイプ: ${classicType}`);
-                throw new Error(`未対応のコントロールタイプ: ${classicType}`);
+                this.logConversion(`Unsupported control type: ${classicType}`);
+                throw new Error(`Unsupported control type: ${classicType}`);
             }
             
-            // 新しいモダンコントロールオブジェクトを作成
+            // Create new modern control object
             const modernControl = {
                 Type: modernType,
                 PropertyDependencies: {},
@@ -94,31 +174,31 @@ class ControlConverter {
                 Version: 1
             };
             
-            // プロパティの変換
+            // Convert properties
             this.convertProperties(classicControl, modernControl);
             
-            // 特殊なコントロールタイプに応じた追加処理
+            // Apply special rules for specific control types
             this.applySpecialRules(classicControl, modernControl);
             
-            this.logConversion('変換完了');
+            this.logConversion('Conversion completed');
             return modernControl;
         } catch (error) {
-            this.logConversion(`エラー: ${error.message}`);
+            this.logConversion(`Error: ${error.message}`);
             throw error;
         }
     }
     
     /**
-     * モダンコントロールタイプを取得します
-     * @param {string} classicType - クラシックコントロールタイプ
-     * @returns {string|null} 対応するモダンコントロールタイプ、または未対応の場合はnull
+     * Get modern control type from classic type
+     * @param {string} classicType - Classic control type
+     * @returns {string|null} Corresponding modern control type or null if not supported
      */
     getModernControlType(classicType) {
         const lowerCaseType = classicType.toLowerCase();
         
         if (this.controlTypeMapping[lowerCaseType]) {
             const modernType = this.controlTypeMapping[lowerCaseType];
-            this.logConversion(`コントロールタイプ変換: ${classicType} -> ${modernType}`);
+            this.logConversion(`Control type conversion: ${classicType} -> ${modernType}`);
             return modernType;
         }
         
@@ -126,26 +206,26 @@ class ControlConverter {
     }
     
     /**
-     * プロパティを変換します
-     * @param {Object} classicControl - クラシックコントロールオブジェクト
-     * @param {Object} modernControl - モダンコントロールオブジェクト
+     * Convert properties from classic to modern format
+     * @param {Object} classicControl - Classic control object
+     * @param {Object} modernControl - Modern control object
      */
     convertProperties(classicControl, modernControl) {
         if (!classicControl.Properties) {
-            this.logConversion('プロパティがありません');
+            this.logConversion('No properties found');
             return;
         }
         
         modernControl.Properties = {};
         
-        // プロパティを変換
+        // Convert properties
         Object.entries(classicControl.Properties).forEach(([key, value]) => {
             const modernKey = this.propertyMapping[key] || key;
             
             if (this.propertyMapping[key]) {
-                this.logConversion(`プロパティ変換: ${key} -> ${modernKey}`);
+                this.logConversion(`Property conversion: ${key} -> ${modernKey}`);
             } else {
-                this.logConversion(`未マッピングのプロパティをそのまま使用: ${key}`);
+                this.logConversion(`Using unmapped property as-is: ${key}`);
             }
             
             modernControl.Properties[modernKey] = value;
@@ -153,52 +233,97 @@ class ControlConverter {
     }
     
     /**
-     * 特殊なコントロールタイプに応じた追加のルールを適用します
-     * @param {Object} classicControl - クラシックコントロールオブジェクト
-     * @param {Object} modernControl - モダンコントロールオブジェクト
+     * Apply special rules for specific control types
+     * @param {Object} classicControl - Classic control object
+     * @param {Object} modernControl - Modern control object
      */
     applySpecialRules(classicControl, modernControl) {
         const classicType = classicControl.Type?.toLowerCase();
         
-        // ボタンの場合の特別ルール
+        // Button special rules
         if (classicType === 'button') {
-            this.logConversion('ボタン用特別ルールを適用');
+            this.logConversion('Applying button-specific rules');
             
-            // モダンボタンには ButtonType プロパティが必要かもしれない
+            // Modern buttons may need ButtonType property
             if (!modernControl.Properties.ButtonType) {
                 modernControl.Properties.ButtonType = 'Standard';
-                this.logConversion('ButtonType プロパティを追加: Standard');
+                this.logConversion('Added ButtonType property: Standard');
             }
+            
+            // Convert border radius if present
+            this.convertBorderRadius(classicControl, modernControl);
         }
         
-        // ギャラリーの場合の特別ルール
+        // Gallery special rules
         else if (classicType === 'gallery') {
-            this.logConversion('ギャラリー用特別ルールを適用');
+            this.logConversion('Applying gallery-specific rules');
             
-            // レイアウトを設定
+            // Set layout
             if (!modernControl.Properties.Layout) {
                 modernControl.Properties.Layout = 'Vertical';
-                this.logConversion('Layout プロパティを追加: Vertical');
+                this.logConversion('Added Layout property: Vertical');
             }
         }
         
-        // フォームの場合の特別ルール
+        // Form special rules
         else if (classicType === 'form') {
-            this.logConversion('フォーム用特別ルールを適用');
+            this.logConversion('Applying form-specific rules');
             
-            // モダンフォームでは FormMode が必要かもしれない
+            // Modern forms may need FormMode
             if (!modernControl.Properties.FormMode) {
                 modernControl.Properties.FormMode = 'Edit';
-                this.logConversion('FormMode プロパティを追加: Edit');
+                this.logConversion('Added FormMode property: Edit');
             }
         }
         
-        // 他のコントロールタイプに応じたカスタムルールも追加可能
+        // Textbox / Text Input special rules
+        else if (classicType === 'textbox') {
+            this.logConversion('Applying text input-specific rules');
+            
+            // Convert HintText to Placeholder if needed
+            if (classicControl.Properties.HintText && !modernControl.Properties.Placeholder) {
+                modernControl.Properties.Placeholder = classicControl.Properties.HintText;
+                this.logConversion('Converted HintText to Placeholder');
+            }
+        }
     }
     
     /**
-     * 変換ログにメッセージを追加します
-     * @param {string} message - ログメッセージ
+     * Convert border radius properties
+     * @param {Object} classicControl - Classic control object
+     * @param {Object} modernControl - Modern control object
+     */
+    convertBorderRadius(classicControl, modernControl) {
+        if (!classicControl.Properties) return;
+        
+        const props = classicControl.Properties;
+        const hasRadius = props.RadiusTopLeft || props.RadiusTopRight || 
+                          props.RadiusBottomLeft || props.RadiusBottomRight;
+        
+        if (hasRadius) {
+            this.logConversion('Converting border radius properties');
+            
+            // Create BorderRadius object if it doesn't exist
+            if (!modernControl.Properties.BorderRadius) {
+                modernControl.Properties.BorderRadius = {
+                    TopLeft: props.RadiusTopLeft || 0,
+                    TopRight: props.RadiusTopRight || 0,
+                    BottomLeft: props.RadiusBottomLeft || 0,
+                    BottomRight: props.RadiusBottomRight || 0
+                };
+                
+                // Remove old properties
+                delete modernControl.Properties['RadiusTopLeft'];
+                delete modernControl.Properties['RadiusTopRight'];
+                delete modernControl.Properties['RadiusBottomLeft'];
+                delete modernControl.Properties['RadiusBottomRight'];
+            }
+        }
+    }
+    
+    /**
+     * Add message to conversion log
+     * @param {string} message - Log message
      */
     logConversion(message) {
         const timestamp = new Date().toLocaleTimeString();
@@ -206,16 +331,16 @@ class ControlConverter {
     }
     
     /**
-     * 変換ログを取得します
-     * @returns {string[]} 変換ログメッセージの配列
+     * Get the conversion log
+     * @returns {string[]} Array of log messages
      */
     getConversionLog() {
         return this.conversionLog;
     }
     
     /**
-     * サンプルのクラシックコントロールYAMLを取得します
-     * @returns {string} サンプルYAML
+     * Get sample classic control YAML for demonstration
+     * @returns {string} Sample YAML
      */
     getSampleClassicYaml() {
         const sampleButton = {
@@ -223,7 +348,7 @@ class ControlConverter {
             Name: 'Button1',
             ZIndex: 1,
             Properties: {
-                Text: '"送信"',
+                Text: '"Submit"',
                 X: 40,
                 Y: 200,
                 Width: 280,
@@ -236,10 +361,63 @@ class ControlConverter {
                 BorderThickness: 0,
                 FocusedBorderThickness: 1,
                 DisplayMode: "DisplayMode.Edit",
-                OnSelect: "Notify(\"ボタンがクリックされました\", NotificationType.Information)"
+                OnSelect: "Notify(\"Button clicked\", NotificationType.Information)"
             }
         };
         
         return YamlParser.stringify(sampleButton);
+    }
+    
+    /**
+     * Get sample gallery control YAML
+     * @returns {string} Sample YAML for gallery control
+     */
+    getSampleGalleryYaml() {
+        const sampleGallery = {
+            Type: 'Gallery',
+            Name: 'Gallery1',
+            ZIndex: 1,
+            Properties: {
+                X: 40,
+                Y: 100,
+                Width: 320,
+                Height: 400,
+                Layout: "Layout.Vertical",
+                TemplateSize: 80,
+                TemplateFill: "RGBA(255, 255, 255, 1)",
+                Items: "SampleCollection",
+                OnSelect: "Select(Self.Selected)",
+                BorderColor: "RGBA(225, 223, 221, 1)",
+                BorderThickness: 1
+            }
+        };
+        
+        return YamlParser.stringify(sampleGallery);
+    }
+    
+    /**
+     * Get sample form control YAML
+     * @returns {string} Sample YAML for form control
+     */
+    getSampleFormYaml() {
+        const sampleForm = {
+            Type: 'Form',
+            Name: 'Form1',
+            ZIndex: 1,
+            Properties: {
+                X: 40,
+                Y: 100,
+                Width: 400,
+                Height: 550,
+                DataSource: "SampleTable",
+                Item: "First(SampleTable)",
+                BorderColor: "RGBA(225, 223, 221, 1)",
+                BorderThickness: 1,
+                Fill: "RGBA(255, 255, 255, 1)",
+                OnSuccess: "Notify(\"Form submitted successfully\", NotificationType.Success)"
+            }
+        };
+        
+        return YamlParser.stringify(sampleForm);
     }
 }

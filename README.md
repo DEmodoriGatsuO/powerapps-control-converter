@@ -1,79 +1,127 @@
-# Power Apps コントロール変換ツール
+# Power Apps Control Converter
 
-Power AppsのクラシックコントロールからモダンコントロールへのYAML変換を支援するWebアプリケーションです。このツールを使用することで、クラシックコントロールのYAMLコードを簡単にモダンコントロール形式に変換できます。
+A modern web application to help Power Apps developers convert classic controls to modern controls. This tool takes YAML source code from classic controls and transforms it to the equivalent modern control format.
 
-## 機能
+## Features
 
-- クラシックコントロールのYAMLをモダンコントロールのYAMLに変換
-- 直感的なユーザーインターフェース
-- リアルタイムの変換ログ表示
-- 変換結果のコピーとダウンロード機能
-- サンプルコード提供機能
+- Intuitive user interface with light and dark themes
+- Conversion from classic control YAML to modern control YAML format
+- Detailed conversion logs to track the transformation process
+- Copy and download functionality for converted results
+- Sample controls to demonstrate the conversion process
+- Customizable mapping configurations via import/export
+- Local storage to remember user preferences and custom mappings
 
-## 使い方
+## Supported Controls
 
-1. 左側のテキストエリアにクラシックコントロールのYAMLを入力するか、「サンプル入力」ボタンをクリックします
-2. 「変換」ボタンをクリックして変換処理を実行します
-3. 変換されたモダンコントロールのYAMLが右側のテキストエリアに表示されます
-4. 「コピー」ボタンで結果をクリップボードにコピーするか、「ダウンロード」ボタンでファイルとして保存できます
-5. 変換の詳細ログは下部に表示されます
+Currently supports conversion for the following control types:
 
-## 対応コントロール
+### Basic Controls
+- Button (button_v1)
+- Text (text_v1)
+- Label (label_v1)
+- Image (image_v1)
+- HTML Text (html_v1)
+- Rectangle (rectangle_v1)
+- Icon (icon_v1)
 
-現在、以下のコントロールタイプの変換に対応しています：
+### Input Controls
+- Text Input (textinput_v1)
+- Text Area (textarea_v1)
+- Dropdown (dropdown_v1)
+- Combo Box (combobox_v1)
+- Checkbox (checkbox_v1)
+- Toggle Switch (toggleswitch_v1)
+- Radio (radio_v1)
+- Slider (slider_v1)
+- Date Picker (datepicker_v1)
+- Time Picker (timepicker_v1)
+- Date Time Picker (datetimepicker_v1)
+- Rating (rating_v1)
 
-- Button（ボタン）
-- Text（テキスト）
-- Label（ラベル）
-- Image（画像）
-- Form（フォーム）
-- Gallery（ギャラリー）
-- Dropdown（ドロップダウン）
-- ComboBox（コンボボックス）
-- TextBox（テキストボックス）
-- CheckBox（チェックボックス）
-- Toggle（トグルスイッチ）
-- Slider（スライダー）
-- DatePicker（日付選択）
-- DataTable（データテーブル）
+### Data Visualization
+- Gallery (gallery_v1)
+- Data Table (datatable_v1)
+- Charts (various chart types)
 
-## 技術仕様
+### Containers & Navigation
+- Form (form_v1)
+- Tab Control (tabcontrol_v1)
+- Group (group_v1)
+- Container (container_v1)
+- Card (card_v1)
+- Dialog (dialog_v1)
 
-- HTML/CSS/JavaScriptのみで実装
-- js-yamlライブラリを使用してYAMLの解析と生成
-- GitHub Pagesでホスティング
+And many more...
 
-## ローカルでの実行方法
+## How to Use
 
-リポジトリをクローンした後、index.htmlをブラウザで開くだけで実行できます：
+1. Open the application in your web browser.
+2. Paste your classic control YAML in the left input area (or click "Load Sample" to see an example).
+3. Click the "Convert" button to transform it to the modern control format.
+4. The converted YAML will appear in the right output area.
+5. Use the "Copy" button to copy the result to your clipboard or "Download" to save it as a file.
+6. View the conversion details in the log section below.
+
+## Customizing Mappings
+
+You can customize how controls and properties are mapped:
+
+1. Click the "Settings" button in the top bar.
+2. Use "Export Mappings" to download your current configuration.
+3. Modify the JSON file to add or change mappings.
+4. Use "Import Mappings" to load your custom configuration.
+
+Custom mappings are saved in your browser's local storage and will persist between sessions.
+
+## Running Locally
+
+To run this application locally:
 
 ```bash
+# Clone the repository
 git clone https://github.com/yourusername/powerapps-control-converter.git
+
+# Navigate to the project directory
 cd powerapps-control-converter
-# index.htmlをブラウザで開く
+
+# Open index.html in your browser
+# No build process required - just open the file
 ```
 
-## 開発者向け情報
+## Deployment
 
-このツールは以下のファイル構成になっています：
+This application is designed to be hosted on GitHub Pages:
 
-- `index.html` - メインのHTMLファイル
-- `css/styles.css` - スタイルシート
-- `js/app.js` - メインのJavaScriptファイル
-- `js/parser.js` - YAMLパーサー機能
-- `js/converter.js` - 変換ロジック
+1. Fork this repository.
+2. Go to the Settings tab of your fork.
+3. Navigate to the Pages section.
+4. Select the main branch as the source.
+5. Your application will be available at `https://<yourusername>.github.io/powerapps-control-converter/`
 
-## 貢献方法
+## Project Structure
 
-1. このリポジトリをフォークする
-2. 機能追加やバグ修正のためのブランチを作成する
-3. 変更を加える
-4. プルリクエストを送信する
+- `index.html` - Main HTML file
+- `css/styles.css` - Stylesheet with light/dark theme support
+- `js/app.js` - Main application logic
+- `js/parser.js` - YAML parsing functionality
+- `js/converter.js` - Conversion logic for control types and properties
 
-## ライセンス
+## Contributing
+
+Contributions are welcome! To contribute:
+
+1. Fork the repository
+2. Create a new branch for your feature
+3. Make your changes
+4. Submit a pull request
+
+## License
 
 MIT
 
-## 免責事項
+## Disclaimer
 
-このツールは、Power Appsのコントロール変換を支援するために作成されていますが、すべてのコントロールタイプやプロパティの完全な互換性を保証するものではありません。変換結果は必ず確認してから使用してください。
+This tool is created to assist Power Apps developers in converting classic controls to modern controls. While it covers many control types and properties, it may not support all possible scenarios. Always review the converted output before using it in your production applications.
+
+The tool is not affiliated with or endorsed by Microsoft.

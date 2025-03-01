@@ -1,50 +1,141 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power Apps コントロール変換ツール</title>
+    <title>Power Apps Control Converter</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- YAML処理用ライブラリ js-yamlをCDNから読み込み -->
+    <!-- Load js-yaml library from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>Power Apps コントロール変換ツール</h1>
-        <p>クラシックコントロールのYAMLをモダンコントロールのYAMLに変換します</p>
-    </header>
+    <div class="app-wrapper">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fa-solid fa-arrows-spin fa-lg"></i>
+                    <h1>Power Apps Control Converter</h1>
+                </div>
+                <p class="tagline">Transform classic controls to modern controls with ease</p>
+            </div>
+        </header>
 
-    <main>
-        <div class="container">
-            <div class="input-container">
-                <h2>クラシックコントロール (入力)</h2>
-                <textarea id="classicControl" placeholder="クラシックコントロールのYAMLを入力してください..."></textarea>
-                <div class="button-group">
-                    <button id="convertBtn">変換</button>
-                    <button id="clearBtn">クリア</button>
-                    <button id="sampleBtn">サンプル入力</button>
+        <main>
+            <div class="toolbar">
+                <div class="tool-section">
+                    <button id="sampleBtn" class="icon-button">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Load Sample</span>
+                    </button>
+                    <button id="clearBtn" class="icon-button">
+                        <i class="fa-solid fa-eraser"></i>
+                        <span>Clear</span>
+                    </button>
+                </div>
+                <div class="tool-section">
+                    <button id="settingsBtn" class="icon-button">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Settings</span>
+                    </button>
+                    <a href="https://github.com/yourusername/powerapps-control-converter" target="_blank" class="icon-button">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
                 </div>
             </div>
-            
-            <div class="output-container">
-                <h2>モダンコントロール (出力)</h2>
-                <textarea id="modernControl" readonly placeholder="変換結果がここに表示されます..."></textarea>
-                <div class="button-group">
-                    <button id="copyBtn">コピー</button>
-                    <button id="downloadBtn">ダウンロード</button>
+
+            <div class="container">
+                <div class="panel input-container">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-code"></i> Classic Control (Input)</h2>
+                    </div>
+                    <textarea id="classicControl" placeholder="Paste your classic control YAML here..."></textarea>
+                    <div class="panel-footer">
+                        <button id="convertBtn" class="primary-button">
+                            <i class="fa-solid fa-arrow-right"></i> Convert
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel output-container">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-wand-magic"></i> Modern Control (Output)</h2>
+                    </div>
+                    <textarea id="modernControl" readonly placeholder="Converted YAML will appear here..."></textarea>
+                    <div class="panel-footer">
+                        <button id="copyBtn" class="secondary-button">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                        <button id="downloadBtn" class="secondary-button">
+                            <i class="fa-solid fa-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel conversion-details">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-list-check"></i> Conversion Log</h2>
+                    <button id="clearLogBtn" class="small-button">
+                        <i class="fa-solid fa-broom"></i> Clear Log
+                    </button>
+                </div>
+                <div id="conversionLog" class="log-content">Conversion logs will appear here...</div>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2025 Power Apps Control Converter | <a href="https://github.com/yourusername/powerapps-control-converter" target="_blank">Open Source</a></p>
+        </footer>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+                    <button id="closeSettingsBtn" class="close-button">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h3>Mapping Settings</h3>
+                        <p>Configure how controls and properties are mapped during conversion.</p>
+                        <div class="settings-actions">
+                            <button id="exportMappingsBtn" class="secondary-button">
+                                <i class="fa-solid fa-file-export"></i> Export Mappings
+                            </button>
+                            <label for="importMappingsInput" class="secondary-button">
+                                <i class="fa-solid fa-file-import"></i> Import Mappings
+                            </label>
+                            <input type="file" id="importMappingsInput" accept=".json" hidden>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Theme</h3>
+                        <div class="theme-selector">
+                            <button class="theme-option" data-theme="light">
+                                <i class="fa-solid fa-sun"></i> Light
+                            </button>
+                            <button class="theme-option" data-theme="dark">
+                                <i class="fa-solid fa-moon"></i> Dark
+                            </button>
+                            <button class="theme-option" data-theme="system">
+                                <i class="fa-solid fa-computer"></i> System
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="conversion-details">
-            <h2>変換詳細</h2>
-            <div id="conversionLog">変換ログがここに表示されます...</div>
-        </div>
-    </main>
-
-    <footer>
-        <p>© 2025 Power Apps コントロール変換ツール | <a href="https://github.com/yourusername/powerapps-control-converter" target="_blank">GitHub</a></p>
-    </footer>
+    </div>
 
     <script src="js/parser.js"></script>
     <script src="js/converter.js"></script>
