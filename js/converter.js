@@ -208,7 +208,7 @@ class ControlConverter {
             'X': 'X',
             'Y': 'Y'
         };
-        
+
         // Log of conversion actions
         this.conversionLog = [];
     }
@@ -382,13 +382,6 @@ class ControlConverter {
         // Map Label to Text for default values
         if (baseType === 'Label') {
             baseType = 'Text';
-        }
-        
-        // Get default values for this control type
-        const defaults = this.modernDefaultValues[baseType];
-        if (!defaults) {
-            this.logConversion(`No default values defined for ${baseType}`);
-            return;
         }
         
         // Add default properties if they don't exist
