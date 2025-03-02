@@ -209,29 +209,6 @@ class ControlConverter {
             'Y': 'Y'
         };
         
-        // Default values for modern controls (properties that need to be added)
-        this.modernDefaultValues = {
-            'Text': {
-                'BorderRadius': '=8',
-                'BorderStyle': '=BorderStyle.Solid',
-                'Font': "=Font.'Segoe UI'",
-                'Size': '=15',
-                'Weight': "='TextCanvas.Weight'.Semibold",
-                'Wrap': '=And(true,true)'
-            },
-            'Button': {
-                'BorderRadius': '=8',
-                'ButtonType': '=ButtonType.Standard',
-                'Font': "=Font.'Segoe UI'",
-                'Size': '=15'
-            },
-            'TextInput': {
-                'BorderRadius': '=8',
-                'Font': "=Font.'Segoe UI'",
-                'Size': '=15'
-            }
-        };
-        
         // Log of conversion actions
         this.conversionLog = [];
     }
@@ -486,33 +463,14 @@ class ControlConverter {
         return `- Label1:
     Control: Label@2.5.1
     Properties:
-      Align: =Align.Center
       AutoHeight: =true
       BorderColor: =App.Theme.Colors.Primary
-      BorderStyle: =BorderStyle.Dashed
-      BorderThickness: =0.5
-      Color: =Color.Black
       ContentLanguage: ="ja-jp"
-      DisabledBorderColor: =Self.BorderColor
-      DisabledColor: =Color.Beige
-      DisabledFill: =Self.Fill
-      DisplayMode: =DisplayMode.View
-      Fill: =Color.Transparent
-      FocusedBorderColor: =Color.Transparent
-      FocusedBorderThickness: =Self.BorderThickness * 2
-      FontWeight: =FontWeight.Bold
-      Height: =42
-      HoverBorderColor: =Self.Fill
-      HoverColor: =Self.Fill
-      HoverFill: =Self.BorderColor
-      Italic: =true
-      LineHeight: =1.4
-      Live: =Live.Polite
-      OnSelect: =true
+      OnSelect: =false
       Tooltip: =Self.Text
-      Width: =320
+      Width: =150
       X: =40
-      Y: =17`;
+      Y: =40`;
     }
     
     /**
@@ -523,7 +481,7 @@ class ControlConverter {
         return `- Button1:
     Control: Classic/Button@2.2.0
     Properties:
-      BorderColor: =RGBA(0, 18, 107, 1)
+      BorderColor: =ColorFade(Self.Fill, -15%)
       BorderStyle: =BorderStyle.Solid
       BorderThickness: =2
       Color: =RGBA(255, 255, 255, 1)
@@ -531,20 +489,20 @@ class ControlConverter {
       DisabledColor: =RGBA(166, 166, 166, 1)
       DisabledFill: =RGBA(244, 244, 244, 1)
       DisplayMode: =DisplayMode.Edit
-      Fill: =RGBA(0, 98, 214, 1)
+      Fill: =RGBA(56, 96, 178, 1)
       FontWeight: =FontWeight.Bold
       Height: =40
-      HoverBorderColor: =RGBA(0, 18, 107, 1)
+      HoverBorderColor: =ColorFade(Self.BorderColor, 20%)
       HoverColor: =RGBA(255, 255, 255, 1)
-      HoverFill: =RGBA(0, 72, 156, 1)
-      OnSelect: =Set(varClicked, true)
-      RadiusBottomLeft: =5
-      RadiusBottomRight: =5
-      RadiusTopLeft: =5
-      RadiusTopRight: =5
-      Size: =13
+      HoverFill: =ColorFade(RGBA(56, 96, 178, 1), -20%)
+      OnSelect: =false
+      RadiusBottomLeft: =10
+      RadiusBottomRight: =10
+      RadiusTopLeft: =10
+      RadiusTopRight: =10
+      Size: =15
       Text: ="Submit Form"
-      Width: =150
+      Width: =160
       X: =40
       Y: =300`;
     }
@@ -557,24 +515,23 @@ class ControlConverter {
         return `- TextInput1:
     Control: Classic/TextInput@2.3.2
     Properties:
-      BorderColor: =RGBA(166, 166, 166, 1)
+      BorderColor: =RGBA(0, 18, 107, 1)
       BorderStyle: =BorderStyle.Solid
-      BorderThickness: =1
-      Color: =RGBA(51, 51, 51, 1)
-      Default: =""
+      BorderThickness: =2
+      Color: =RGBA(0, 0, 0, 1)
+      Default: ="テキスト入力"
       DisplayMode: =DisplayMode.Edit
       Fill: =RGBA(255, 255, 255, 1)
       FontWeight: =FontWeight.Normal
-      Height: =35
+      Height: =40
       HintText: ="Enter your name"
-      MaxLength: =50
-      PaddingLeft: =10
-      RadiusBottomLeft: =4
-      RadiusBottomRight: =4
-      RadiusTopLeft: =4
-      RadiusTopRight: =4
-      Size: =12
-      Width: =280
+      PaddingLeft: =5
+      RadiusBottomLeft: =12
+      RadiusBottomRight: =5
+      RadiusTopLeft: =5
+      RadiusTopRight: =5
+      Size: =13
+      Width: =320
       X: =40
       Y: =120`;
     }

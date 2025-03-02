@@ -1,120 +1,78 @@
 # Power Apps Control Converter
 
-A modern web application to help Power Apps developers convert classic controls to modern controls. This tool takes YAML source code from classic controls and transforms it to the equivalent modern control format.
+A web-based tool that converts Power Apps classic controls to modern controls, preserving functionality while embracing the latest Power Apps features.
+
+## Overview
+
+Power Apps Control Converter is a specialized tool designed to help Power Apps developers easily migrate their classic controls to modern equivalents. The tool processes YAML source code from classic controls and transforms it into the corresponding modern control format, handling all the necessary property mappings and adding required modern properties.
 
 ## Features
 
-- Intuitive user interface with light and dark themes
-- Conversion from classic control YAML to modern control YAML format
-- Detailed conversion logs to track the transformation process
-- Copy and download functionality for converted results
-- Sample controls to demonstrate the conversion process
-- Customizable mapping configurations via import/export
-- Local storage to remember user preferences and custom mappings
+- **Intuitive Interface**: A clean, modern UI with light and dark themes
+- **YAML Conversion**: Accurately converts Power Apps-specific YAML format
+- **Control Type Support**: Handles multiple control types including Label, Button, TextInput, and more
+- **Property Mapping**: Intelligently maps properties between classic and modern controls
+- **Detailed Logging**: Provides transparent conversion steps with detailed logs
+- **Sample Controls**: Pre-loaded examples to demonstrate the conversion process
+- **Customizable Mappings**: Export and import mapping configurations
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Supported Controls
 
-Currently supports conversion for the following control types:
+The converter currently supports the following control conversions:
 
-### Basic Controls
-- Button (button_v1)
-- Text (text_v1)
-- Label (label_v1)
-- Image (image_v1)
-- HTML Text (html_v1)
-- Rectangle (rectangle_v1)
-- Icon (icon_v1)
-
-### Input Controls
-- Text Input (textinput_v1)
-- Text Area (textarea_v1)
-- Dropdown (dropdown_v1)
-- Combo Box (combobox_v1)
-- Checkbox (checkbox_v1)
-- Toggle Switch (toggleswitch_v1)
-- Radio (radio_v1)
-- Slider (slider_v1)
-- Date Picker (datepicker_v1)
-- Time Picker (timepicker_v1)
-- Date Time Picker (datetimepicker_v1)
-- Rating (rating_v1)
-
-### Data Visualization
-- Gallery (gallery_v1)
-- Data Table (datatable_v1)
-- Charts (various chart types)
-
-### Containers & Navigation
-- Form (form_v1)
-- Tab Control (tabcontrol_v1)
-- Group (group_v1)
-- Container (container_v1)
-- Card (card_v1)
-- Dialog (dialog_v1)
-
-And many more...
+| Classic Control | Modern Control |
+|-----------------|----------------|
+| Label@2.5.1 | Text@0.0.50 |
+| Classic/TextInput@2.3.2 | TextInput@0.0.53 |
+| Classic/Button@2.2.0 | Button@0.0.44 |
+| Classic/DropDown@2.3.1 | DropDown@0.0.44 |
+| Classic/ComboBox@2.4.0 | ComboBox@0.0.49 |
+| Classic/DatePicker@2.6.0 | DatePicker@0.0.42 |
+| Classic/CheckBox@2.1.0 | CheckBox@0.0.27 |
+| Classic/Radio@2.3.0 | Radio@0.0.24 |
+| Classic/Toggle@2.1.0 | Toggle@1.1.4 |
+| Classic/Slider@2.1.0 | Slider@1.0.31 |
 
 ## How to Use
 
-1. Open the application in your web browser.
-2. Paste your classic control YAML in the left input area (or click "Load Sample" to see an example).
-3. Click the "Convert" button to transform it to the modern control format.
-4. The converted YAML will appear in the right output area.
-5. Use the "Copy" button to copy the result to your clipboard or "Download" to save it as a file.
-6. View the conversion details in the log section below.
+1. Open the application in your web browser
+2. Choose a classic control to convert:
+   - Paste your own Power Apps YAML code in the input area
+   - Or click "Load Sample" to see example controls
+3. Click "Convert" to transform the classic control to its modern equivalent
+4. Review the conversion output and log details
+5. Use "Copy" to copy the result to your clipboard or "Download" to save as a file
 
-## Customizing Mappings
+## Technical Implementation
 
-You can customize how controls and properties are mapped:
+The converter consists of three main components:
 
-1. Click the "Settings" button in the top bar.
-2. Use "Export Mappings" to download your current configuration.
-3. Modify the JSON file to add or change mappings.
-4. Use "Import Mappings" to load your custom configuration.
+1. **YAML Parser (parser.js)**: Specialized to handle Power Apps' unique YAML format, including formula expressions and control references
+2. **Control Converter (converter.js)**: Implements the mapping logic between classic and modern controls
+3. **User Interface (app.js)**: Provides an intuitive interface for performing conversions
 
-Custom mappings are saved in your browser's local storage and will persist between sessions.
+The conversion process follows these steps:
+1. Extract control information from the YAML
+2. Determine the appropriate modern control type
+3. Map properties from classic to modern format
+4. Add required modern properties
+5. Format the result as Power Apps YAML
 
-## Running Locally
+## Extending the Tool
 
-To run this application locally:
+You can extend the tool to support additional control types or customize property mappings:
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/powerapps-control-converter.git
+1. Click the "Settings" button
+2. Export current mappings
+3. Modify the JSON file to add or change mappings
+4. Import your custom mappings
 
-# Navigate to the project directory
-cd powerapps-control-converter
-
-# Open index.html in your browser
-# No build process required - just open the file
-```
+Custom mappings are saved in your browser's local storage for future use.
 
 ## Deployment
 
-This application is designed to be hosted on GitHub Pages:
-
-1. Fork this repository.
-2. Go to the Settings tab of your fork.
-3. Navigate to the Pages section.
-4. Select the main branch as the source.
-5. Your application will be available at `https://<yourusername>.github.io/powerapps-control-converter/`
-
-## Project Structure
-
-- `index.html` - Main HTML file
-- `css/styles.css` - Stylesheet with light/dark theme support
-- `js/app.js` - Main application logic
-- `js/parser.js` - YAML parsing functionality
-- `js/converter.js` - Conversion logic for control types and properties
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository
-2. Create a new branch for your feature
-3. Make your changes
-4. Submit a pull request
+The application is designed to be hosted on GitHub Pages or any static hosting service. No server-side processing is required.
 
 ## License
 
@@ -122,6 +80,4 @@ MIT
 
 ## Disclaimer
 
-This tool is created to assist Power Apps developers in converting classic controls to modern controls. While it covers many control types and properties, it may not support all possible scenarios. Always review the converted output before using it in your production applications.
-
-The tool is not affiliated with or endorsed by Microsoft.
+This tool is created by a community developer and is not officially affiliated with Microsoft Power Apps. Always review generated code before using it in production environments.
