@@ -28,7 +28,18 @@ class ControlConverter {
             'CheckBox': 'CheckBox@0.0.27',
             'Radio': 'Radio@0.0.24',
             'Toggle': 'Toggle@1.1.4',
-            'Slider': 'Slider@1.0.31'
+            'Slider': 'Slider@1.0.31',
+            
+            // Special case: fully qualified Classic controls
+            'Classic/TextInput': 'TextInput@0.0.53',
+            'Classic/Button': 'Button@0.0.44',
+            'Classic/DropDown': 'DropDown@0.0.44',
+            'Classic/ComboBox': 'ComboBox@0.0.49',
+            'Classic/DatePicker': 'DatePicker@0.0.42',
+            'Classic/CheckBox': 'CheckBox@0.0.27',
+            'Classic/Radio': 'Radio@0.0.24',
+            'Classic/Toggle': 'Toggle@1.1.4',
+            'Classic/Slider': 'Slider@1.0.31'
         };
 
         // Define property mappings by control type
@@ -119,6 +130,60 @@ class ControlConverter {
                 'Width': 'Width',
                 'X': 'X',
                 'Y': 'Y'
+            },
+            
+            // Add mappings for "Classic/" prefixed controls
+            'Classic/TextInput': {
+                'BorderColor': 'BorderColor',
+                'BorderStyle': 'BorderStyle',
+                'BorderThickness': 'BorderThickness',
+                'Color': 'FontColor',
+                'Default': 'DefaultText',
+                'DisplayMode': 'DisplayMode',
+                'Fill': 'Fill',
+                'Font': 'Font',
+                'FontWeight': 'Weight',
+                'Height': 'Height',
+                'HintText': 'Placeholder',
+                'MaxLength': 'MaxLength',
+                'PaddingLeft': 'PaddingLeft',
+                'RadiusBottomLeft': 'BorderRadiusBottomLeft',
+                'RadiusBottomRight': 'BorderRadiusBottomRight',
+                'RadiusTopLeft': 'BorderRadiusTopLeft',
+                'RadiusTopRight': 'BorderRadiusTopRight',
+                'Size': 'Size',
+                'Width': 'Width',
+                'X': 'X',
+                'Y': 'Y'
+            },
+            
+            'Classic/Button': {
+                'BorderColor': 'BorderColor',
+                'BorderStyle': 'BorderStyle',
+                'BorderThickness': 'BorderThickness',
+                'Color': 'FontColor',
+                'DisabledBorderColor': 'DisabledBorderColor',
+                'DisabledColor': 'DisabledFontColor',
+                'DisabledFill': 'DisabledFill',
+                'DisplayMode': 'DisplayMode',
+                'Fill': 'Fill',
+                'Font': 'Font',
+                'FontWeight': 'Weight',
+                'Height': 'Height',
+                'HoverBorderColor': 'HoverBorderColor',
+                'HoverColor': 'HoverFontColor',
+                'HoverFill': 'HoverFill',
+                'OnSelect': 'OnSelect',
+                'RadiusBottomLeft': 'BorderRadiusBottomLeft',
+                'RadiusBottomRight': 'BorderRadiusBottomRight',
+                'RadiusTopLeft': 'BorderRadiusTopLeft',
+                'RadiusTopRight': 'BorderRadiusTopRight',
+                'Size': 'Size',
+                'Text': 'Text',
+                'Visible': 'Visible',
+                'Width': 'Width',
+                'X': 'X',
+                'Y': 'Y'
             }
             
             // Add other control mappings as needed
@@ -182,7 +247,7 @@ class ControlConverter {
             this.conversionLog = [];
             this.logConversion('Starting conversion of Power Apps control');
             
-            // Extract control information
+            // Extract control information directly from YAML string
             const controlInfo = YamlParser.extractControlInfo(classicYaml);
             if (!controlInfo) {
                 throw new Error('Could not extract control information from YAML');
@@ -191,16 +256,7 @@ class ControlConverter {
             // Log the detected control
             this.logConversion(`Detected control: ${controlInfo.controlName} of type ${controlInfo.fullControlType}`);
             
-            // Parse the YAML to get the control object
-            const parsed = YamlParser.parse(classicYaml);
-            if (!parsed || !parsed[controlInfo.controlName]) {
-                throw new Error('Invalid Power Apps YAML structure');
-            }
-            
-            // Get the control data
-            const classicControl = parsed[controlInfo.controlName];
-            
-            // Get the target modern control type
+            // For Power Apps YAML, we'll work directly with the YAML string for better compatibility
             const modernControlType = this.getModernControlType(controlInfo.fullControlType);
             if (!modernControlType) {
                 throw new Error(`Unsupported control type: ${controlInfo.fullControlType}`);
@@ -209,9 +265,15 @@ class ControlConverter {
             // Generate a new name for the modern control
             const modernControlName = this.generateModernControlName(controlInfo.controlName, modernControlType);
             
+            // Extract properties directly from YAML
+            const properties = YamlParser.extractProperties(classicYaml);
+            if (!properties) {
+                throw new Error('Could not extract properties from YAML');
+            }
+            
             // Convert properties
             const modernProperties = this.convertProperties(
-                classicControl.Properties || {},
+                properties,
                 controlInfo.controlType
             );
             
@@ -284,7 +346,19 @@ class ControlConverter {
         const modernProperties = {};
         
         // Get the property mapping for this control type
-        const propertyMapping = this.propertyMappingByControl[controlType] || this.commonPropertyMapping;
+        let propertyMapping = this.propertyMappingByControl[controlType] || this.commonPropertyMapping;
+        
+        // If we don't have a mapping for this exact control type, try without the version
+        if (!this.propertyMappingByControl[controlType]) {
+            // Try without version number
+            const baseType = controlType.split('@')[0];
+            if (this.propertyMappingByControl[baseType]) {
+                propertyMapping = this.propertyMappingByControl[baseType];
+                this.logConversion(`Using property mapping for base type: ${baseType}`);
+            } else {
+                this.logConversion(`No specific mapping found for ${controlType}, using common mapping`);
+            }
+        }
         
         // Apply mappings for existing properties
         Object.entries(classicProperties).forEach(([key, value]) => {
@@ -324,12 +398,19 @@ class ControlConverter {
      * @param {string} controlType - Control type
      */
     addDefaultModernProperties(properties, controlType) {
-        // Get the base control type without version
-        const baseType = controlType.split('@')[0];
+        // Extract the base control type without version or "Classic/" prefix
+        let baseType = controlType.split('@')[0];
+        baseType = baseType.replace('Classic/', '');
+        
+        // Map Label to Text for default values
+        if (baseType === 'Label') {
+            baseType = 'Text';
+        }
         
         // Get default values for this control type
         const defaults = this.modernDefaultValues[baseType];
         if (!defaults) {
+            this.logConversion(`No default values defined for ${baseType}`);
             return;
         }
         
@@ -357,6 +438,44 @@ class ControlConverter {
      */
     getConversionLog() {
         return this.conversionLog;
+    }
+    
+    /**
+     * Parse properties from YAML string
+     * @param {string} propertiesYaml - YAML string containing properties
+     * @returns {Object} Parsed properties object
+     */
+    parsePropertiesFromYaml(propertiesYaml) {
+        const properties = {};
+        const propertyLines = propertiesYaml.split('\n');
+        
+        for (const line of propertyLines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || !trimmedLine.includes(':')) continue;
+            
+            const [key, ...valueParts] = trimmedLine.split(':');
+            let value = valueParts.join(':').trim();
+            
+            // Skip empty values
+            if (!value) continue;
+            
+            if (value.startsWith('=')) {
+                // Formula value
+                properties[key.trim()] = value;
+            } else if (value === 'true' || value === 'false') {
+                // Boolean value
+                properties[key.trim()] = value === 'true';
+            } else if (!isNaN(Number(value)) && value !== '') {
+                // Numeric value
+                properties[key.trim()] = Number(value);
+            } else {
+                // String value, remove quotes if present
+                value = value.replace(/^"(.*)"$/, '$1');
+                properties[key.trim()] = value;
+            }
+        }
+        
+        return properties;
     }
     
     /**

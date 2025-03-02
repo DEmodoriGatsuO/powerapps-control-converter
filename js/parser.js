@@ -34,11 +34,17 @@ class YamlParser {
      * @returns {string} Processed YAML text
      */
     static preProcessPowerAppsYaml(yamlText) {
-        // Handle formula expressions that start with =
-        let processed = yamlText.replace(/: =(.*?)$/gm, ': "$$$=$1"');
+        // First, handle formula expressions that start with =
+        let processed = yamlText.replace(/: =(.*?)$/gm, ': "__FORMULA__$1"');
         
         // Handle control references
         processed = processed.replace(/Control: ([^@\s]+)@([\d.]+)/g, 'Control: "$1@$2"');
+        
+        // Handle special YAML characters in property values
+        processed = processed.replace(/: (true|false|yes|no|on|off)$/gim, ': "$1"');
+        
+        // Handle property values with special characters that need quotes
+        processed = processed.replace(/: ([^"\n]*[\[\]{}|>*&!%:,].*?)$/gm, ': "$1"');
         
         return processed;
     }
@@ -69,8 +75,8 @@ class YamlParser {
                 }
                 
                 // Process formula expressions
-                if (typeof obj[key] === 'string' && obj[key].startsWith('$$$=')) {
-                    obj[key] = obj[key].replace(/^\$\$\$=/, '=');
+                if (typeof obj[key] === 'string' && obj[key].startsWith('__FORMULA__')) {
+                    obj[key] = obj[key].replace(/^__FORMULA__/, '=');
                 }
                 
                 // Recursively process nested objects
@@ -185,11 +191,19 @@ class YamlParser {
      * @returns {boolean} True if valid, false otherwise
      */
     static validate(yamlText) {
+        // For Power Apps YAML, perform a basic structure check rather than full parsing
         try {
-            // Pre-process the YAML to handle Power Apps-specific format
-            const processedYaml = this.preProcessPowerAppsYaml(yamlText);
+            // Check for basic structure patterns that indicate valid Power Apps YAML
+            const hasControlDefinition = yamlText.includes('Control:');
+            const hasPropertiesSection = yamlText.includes('Properties:');
             
-            // Attempt to parse
+            // Simple validation - at minimum should have control definition and properties
+            if (hasControlDefinition && hasPropertiesSection) {
+                return true;
+            }
+            
+            // If it doesn't match Power Apps pattern, try standard YAML validation
+            const processedYaml = this.preProcessPowerAppsYaml(yamlText);
             jsyaml.load(processedYaml);
             return true;
         } catch (error) {
@@ -217,6 +231,19 @@ class YamlParser {
                 };
             }
             
+            // Try an alternative regex for controls with "Classic/" prefix
+            const alternativeRegex = /- ([^:]+):\s*\n\s*Control: (Classic\/[^@\s]+)@([\d.]+)/;
+            const altMatch = yamlText.match(alternativeRegex);
+            
+            if (altMatch) {
+                return {
+                    controlName: altMatch[1],
+                    controlType: altMatch[2],
+                    controlVersion: altMatch[3],
+                    fullControlType: `${altMatch[2]}@${altMatch[3]}`
+                };
+            }
+            
             return null;
         } catch (error) {
             console.error('Error extracting control info:', error);
@@ -232,17 +259,7 @@ class YamlParser {
      * @returns {string} Formatted Power Apps YAML
      */
     static formatPowerAppsControl(controlName, controlType, properties) {
-        const controlObj = {
-            [controlName]: {
-                Control: controlType,
-                Properties: properties
-            }
-        };
-        
-        // Process the object for Power Apps YAML format
-        const processedObj = this.preProcessObjectForYaml(controlObj);
-        
-        // Generate YAML with specific formatting
+        // Start building the YAML
         let yamlText = `- ${controlName}:\n    Control: ${controlType}\n    Properties:\n`;
         
         // Add properties with proper indentation
@@ -253,10 +270,84 @@ class YamlParser {
             } else if (typeof value === 'boolean' || typeof value === 'number') {
                 yamlText += `      ${key}: ${value}\n`;
             } else {
-                yamlText += `      ${key}: "${value}"\n`;
+                // For string values, check if they need quotes
+                const needsQuotes = typeof value === 'string' && 
+                                    (value.includes(':') || 
+                                     value.includes('{') || 
+                                     value.includes('}') ||
+                                     value.includes('[') ||
+                                     value.includes(']') ||
+                                     value.includes('!') ||
+                                     value.includes('#') ||
+                                     value.includes('*'));
+                
+                if (needsQuotes) {
+                    yamlText += `      ${key}: "${value}"\n`;
+                } else {
+                    yamlText += `      ${key}: ${value}\n`;
+                }
             }
         });
         
         return yamlText;
+    }
+    
+    /**
+     * Extract properties directly from YAML text
+     * @param {string} yamlText - Power Apps YAML text
+     * @returns {Object} Extracted properties or null if not found
+     */
+    static extractProperties(yamlText) {
+        try {
+            // Extract the Properties section
+            const propertiesMatch = yamlText.match(/Properties:([\s\S]*?)(?=\n\w|$)/);
+            if (!propertiesMatch) {
+                return null;
+            }
+            
+            const propertiesYaml = propertiesMatch[1];
+            return this.parsePropertiesFromYaml(propertiesYaml);
+        } catch (error) {
+            console.error('Error extracting properties:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Parse properties from YAML string
+     * @param {string} propertiesYaml - YAML string containing properties
+     * @returns {Object} Parsed properties object
+     */
+    static parsePropertiesFromYaml(propertiesYaml) {
+        const properties = {};
+        const propertyLines = propertiesYaml.split('\n');
+        
+        for (const line of propertyLines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || !trimmedLine.includes(':')) continue;
+            
+            const [key, ...valueParts] = trimmedLine.split(':');
+            let value = valueParts.join(':').trim();
+            
+            // Skip empty values
+            if (!value) continue;
+            
+            if (value.startsWith('=')) {
+                // Formula value
+                properties[key.trim()] = value;
+            } else if (value === 'true' || value === 'false') {
+                // Boolean value
+                properties[key.trim()] = value === 'true';
+            } else if (!isNaN(Number(value)) && value !== '') {
+                // Numeric value
+                properties[key.trim()] = Number(value);
+            } else {
+                // String value, remove quotes if present
+                value = value.replace(/^"(.*)"$/, '$1');
+                properties[key.trim()] = value;
+            }
+        }
+        
+        return properties;
     }
 }
