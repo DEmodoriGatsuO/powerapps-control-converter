@@ -84,26 +84,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            // Validate YAML format
+            // Check if the input is valid Power Apps YAML
             if (!YamlParser.validate(classicYaml)) {
-                showToast('Invalid YAML', 'Please check the syntax of your input.', 'error');
+                showToast('Invalid YAML', 'Please check the syntax of your Power Apps YAML input.', 'error');
                 return;
             }
             
-            // Parse YAML
-            const classicControl = YamlParser.parse(classicYaml);
-            
-            // Convert control
-            const modernControl = converter.convert(classicControl);
+            // Convert the YAML using the converter
+            const modernYaml = converter.convert(classicYaml);
             
             // Display converted YAML
-            const modernYaml = YamlParser.stringify(modernControl);
             modernControlTextarea.value = modernYaml;
             
             // Display conversion log
             displayConversionLog(converter.getConversionLog());
             
-            showToast('Success', 'Conversion completed successfully!', 'success');
+            showToast('Success', 'Control converted successfully to modern format!', 'success');
         } catch (error) {
             showToast('Error', error.message, 'error');
             console.error(error);
@@ -134,7 +130,17 @@ document.addEventListener('DOMContentLoaded', function() {
      * Load sample YAML data
      */
     function loadSample() {
-        classicControlTextarea.value = converter.getSampleClassicYaml();
+        // Choose a random sample to showcase different control types
+        const samples = [
+            converter.getSampleClassicYaml,           // Label sample
+            converter.getSampleClassicButtonYaml,     // Button sample
+            converter.getSampleClassicTextInputYaml   // TextInput sample
+        ];
+        
+        const sampleIndex = Math.floor(Math.random() * samples.length);
+        const sampleFunction = samples[sampleIndex];
+        
+        classicControlTextarea.value = sampleFunction.call(converter);
         showToast('Sample Loaded', 'Sample classic control YAML has been loaded.', 'info');
     }
     
@@ -225,7 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function exportMappings() {
         const mappings = {
             controlTypes: converter.controlTypeMapping,
-            properties: converter.propertyMapping
+            propertyMappings: converter.propertyMappingByControl,
+            defaultValues: converter.modernDefaultValues
         };
         
         const blob = new Blob([JSON.stringify(mappings, null, 2)], { type: 'application/json' });
@@ -233,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const a = document.createElement('a');
         
         a.href = url;
-        a.download = 'control-mappings.json';
+        a.download = 'power-apps-mappings.json';
         document.body.appendChild(a);
         a.click();
         
@@ -243,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.URL.revokeObjectURL(url);
         }, 0);
         
-        showToast('Exported', 'Mappings configuration has been exported.', 'success');
+        showToast('Exported', 'Power Apps mappings configuration has been exported.', 'success');
     }
     
     /**
@@ -259,18 +266,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const mappings = JSON.parse(e.target.result);
                 
                 // Validate the mappings file structure
-                if (!mappings.controlTypes || !mappings.properties) {
+                if (!mappings.controlTypes || !mappings.propertyMappings || !mappings.defaultValues) {
                     throw new Error('Invalid mappings file format');
                 }
                 
                 // Apply the imported mappings
                 converter.controlTypeMapping = mappings.controlTypes;
-                converter.propertyMapping = mappings.properties;
+                converter.propertyMappingByControl = mappings.propertyMappings;
+                converter.modernDefaultValues = mappings.defaultValues;
                 
                 // Save to localStorage
                 saveUserMappings();
                 
-                showToast('Imported', 'Mappings configuration has been imported.', 'success');
+                showToast('Imported', 'Power Apps mappings configuration has been imported.', 'success');
             } catch (error) {
                 showToast('Import Failed', `Could not import mappings: ${error.message}`, 'error');
                 console.error('Error importing mappings:', error);
@@ -409,7 +417,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveUserMappings() {
         const userMappings = {
             controlTypes: converter.controlTypeMapping,
-            properties: converter.propertyMapping
+            propertyMappings: converter.propertyMappingByControl,
+            defaultValues: converter.modernDefaultValues
         };
         
         localStorage.setItem('userMappings', JSON.stringify(userMappings));
@@ -433,10 +442,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
                 
-                if (mappings.properties) {
-                    converter.propertyMapping = {
-                        ...converter.propertyMapping,
-                        ...mappings.properties
+                if (mappings.propertyMappings) {
+                    converter.propertyMappingByControl = {
+                        ...converter.propertyMappingByControl,
+                        ...mappings.propertyMappings
+                    };
+                }
+                
+                if (mappings.defaultValues) {
+                    converter.modernDefaultValues = {
+                        ...converter.modernDefaultValues,
+                        ...mappings.defaultValues
                     };
                 }
                 
